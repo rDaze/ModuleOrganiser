@@ -1,0 +1,27 @@
+﻿<Window x:Class="ModuleOrganiser.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ModuleOrganiser"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid>
+        <TextBox Name="PathMoonlight" Width="250" Height="35" Margin="497,386,53,13"/>
+        <Button Content="Moonlight Directory" Click="GetMoonlightDirectory" Height="35" Width="250" Margin="497,346,53,53"/>
+
+        <TextBox Name="PathSteam" Width="250" Height="35" Margin="497,306,53,93"/>
+        <Button Content="Steam Directory" Click="GetSteamDirectory" Height="35" Width="250" Margin="497,266,53,133"/>
+
+        <Button Content="Run CS:GO" Click="RunSteam" Height="35" Width="150" Margin="547,120,103,279"/>
+        <Button Content="Run Moonlight" Click="RunMoonlight" Height="35" Width="150" Margin="547,40,103,359"/>
+
+        <ListBox x:Name="MoonlightListModules" Width="350" Margin="10,0,440,0">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <CheckBox Content="{Binding ModuleName}" IsChecked="{Binding IsModuleLoaded}" Checked="OnAddModule" Unchecked="OnRemoveModule"/>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+    </Grid>
+</Window>
