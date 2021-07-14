@@ -18,10 +18,11 @@ using Path = System.IO.Path;
 
 namespace ModuleOrganiser
 {
+    // ToDo: How the fuck do I manage user input error?
+
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    /// ToDo: Add Error handling (e.g launch CSGO if no dir is there)
     public partial class MainWindow : Window
     {
         string MoonlightDir = null;
@@ -35,6 +36,13 @@ namespace ModuleOrganiser
             LoadSavedDirectories();
         }
 
+        /// <summary>
+        /// Opens a folder browsing dialog and saves the result to MoonlightDir
+        /// Calls SaveDirToFile() to save MoonlightDir to .txt
+        /// Calls UpdateListBox() to populate ListBox with Moonlight modules
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void GetMoonlightDirectory(object sender, RoutedEventArgs e)
         {
             System.Windows.Forms.FolderBrowserDialog folderBrowsingDialog = new System.Windows.Forms.FolderBrowserDialog();
@@ -48,6 +56,12 @@ namespace ModuleOrganiser
             }
         }
 
+        /// <summary>
+        /// Opens a folder browsing dialog and saves the result to SteamDir
+        /// Calls SaveDirToFile() to save SteamDir to .txt
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void GetSteamDirectory(object sender, RoutedEventArgs e)
         {
             System.Windows.Forms.FolderBrowserDialog folderBrowsingDialog = new System.Windows.Forms.FolderBrowserDialog();
@@ -60,11 +74,18 @@ namespace ModuleOrganiser
             }
         }
 
+        /// <summary>
+        /// Saves MoonlightDir and/or SteamDir to a .txt
+        /// MoonlightDir will always be in line 1 | SteamDir will always be in line 2
+        /// </summary>
         private void SaveDirToFile()
         {
             File.WriteAllText("ModuleSettings.txt", MoonlightDir + "\r\n" + SteamDir);
         }
 
+        /// <summary>
+        /// Populates the ListBox
+        /// </summary>
         private void UpdateListBox()
         {
             List<MoonlightModule> moonlightModulesList = new List<MoonlightModule>();
@@ -81,6 +102,11 @@ namespace ModuleOrganiser
             MoonlightListModules.ItemsSource = moonlightModulesList;
         }
 
+        /// <summary>
+        /// Performs a basic check in order to see if a module is enabled or not
+        /// </summary>
+        /// <param name="moduleName">Module Name</param>
+        /// <returns></returns>
         private bool IsMoonlightModuleLoaded(string moduleName)
         {
             string enabledDir = MoonlightDir + "/moonlight/scripts";
@@ -96,32 +122,75 @@ namespace ModuleOrganiser
             return false;
         }
 
-        //If user changes fantasy.moonlight.exe then this is screwed
+        /// <summary>
+        /// Runs Moonlight as Administrator
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void RunMoonlight(object sender, RoutedEventArgs e)
         {
-            ProcessStartInfo proc = new ProcessStartInfo
+            if (MoonlightDir != null)
             {
-                Verb = "runas",
-                UseShellExecute = true,
-                WorkingDirectory = MoonlightDir,
-                FileName = "fantasy.moonlight.exe"
-            };
-            Process.Start(proc);
+                try
+                {
+                    ProcessStartInfo proc = new ProcessStartInfo
+                    {
+                        Verb = "runas",
+                        UseShellExecute = true,
+                        WorkingDirectory = MoonlightDir,
+                        FileName = "fantasy.moonlight.exe"
+                    };
+                    Process.Start(proc);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to launch moonlight: \r\n {ex}", "Error", MessageBoxButton.OK);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Failed to get moonlight directory", "Error", MessageBoxButton.OK);
+            }
         }
 
+        /// <summary>
+        /// Runs Steam as Administrator 
+        /// Passes "-applaunch 730" in order to directly launch CS:GO
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void RunSteam(object sender, RoutedEventArgs e)
         {
-            ProcessStartInfo proc = new ProcessStartInfo
+            if (SteamDir != null)
             {
-                Verb = "runas",
-                UseShellExecute = true,
-                WorkingDirectory = SteamDir,
-                FileName = "steam.exe",
-                Arguments = "-applaunch 730"
-            };
-            Process.Start(proc);
+                try
+                {
+                    ProcessStartInfo proc = new ProcessStartInfo
+                    {
+                        Verb = "runas",
+                        UseShellExecute = true,
+                        WorkingDirectory = SteamDir,
+                        FileName = "steam.exe",
+                        Arguments = "-applaunch 730"
+                    };
+                    Process.Start(proc);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to launch steam: \r\n {ex}", "Error", MessageBoxButton.OK);
+                }
+            }
+            else
+            {
+                MessageBox.Show($"Failed to get steam directory", "Error", MessageBoxButton.OK);
+            }
         }
 
+        /// <summary>
+        /// Enables the desired module by copying
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OnAddModule(object sender, RoutedEventArgs e)
         {
            foreach (MoonlightModule moonlightModule in MoonlightListModules.ItemsSource)
@@ -136,6 +205,11 @@ namespace ModuleOrganiser
            }
         }
 
+        /// <summary>
+        /// Removes the desired module by deleting
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OnRemoveModule(object sender, RoutedEventArgs e)
         {
             foreach (MoonlightModule moonlightModule in MoonlightListModules.ItemsSource)
@@ -152,6 +226,11 @@ namespace ModuleOrganiser
             }
         }
 
+        /// <summary>
+        /// Scans for ModuleSettings.txt and reads the MoonlightDir and/or SteamDir
+        /// Updates variables, TextBoxes, and ListBox
+        /// Sets var to null if string is empty
+        /// </summary>
         private void LoadSavedDirectories()
         {
             if (File.Exists("ModuleSettings.txt"))
